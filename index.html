@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartOffice - 培训管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6CD9E8 0%, #4A90E2 100%);
+            --primary-gradient-reverse: linear-gradient(135deg, #4A90E2 0%, #6CD9E8 100%);
+            --accent-color: #FF6B6B;
+            --text-primary: #2C3E50;
+            --text-secondary: #34495E;
+            --text-body: #7F8C8D;
+            --background-color: #F8F9FA;
+            --sidebar-width: 300px;
+            --main-width: 1140px;
+            --border-radius: 8px;
+            --box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-body);
+            display: flex;
+            min-height: 100vh;
+            width: 1440px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        /* 左侧菜单样式 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease-out;
+            position: relative;
+        }
+
+        .logo {
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2C3E50 0%, #3498DB 100%);
+            position: relative;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+        }
+
+        .logo-line {
+            width: 60px;
+            height: 3px;
+            background: #E74C3C;
+            position: absolute;
+            bottom: 20px;
+        }
+
+        .menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            width: fit-content;
+            min-width: 160px;
+            height: 60px;
+            margin: 10px auto;
+            cursor: pointer;
+            transition: all 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            position: relative;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            padding: 0 20px;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+            z-index: 0;
+        }
+
+        .menu-item:hover::before {
+            opacity: 0.1;
+        }
+
+        .menu-item.active::before {
+            opacity: 1;
+        }
+
+        .menu-item span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .menu-item i {
+            margin-right: 10px;
+            transition: transform 0.3s ease;
+            opacity: 1;
+        }
+
+        .menu-item:hover i {
+            transform: rotate(15deg);
+        }
+
+        .menu-item.active i {
+            transform: rotate(0deg);
+        }
+
+        .submenu {
+            display: none;
+            background: #f8f9fa;
+            transition: all 0.3s ease-out;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 12px 20px 12px 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .submenu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .submenu-item:hover::before {
+            opacity: 1;
+        }
+
+        /* 子菜单样式 */
+        .sub-submenu {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            min-width: 150px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .submenu-item:hover .sub-submenu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .sub-submenu-item {
+            padding: 10px 15px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sub-submenu-item:hover {
+            background: rgba(108, 217, 232, 0.1);
+            color: var(--text-primary);
+        }
+
+        .sub-submenu-item i {
+            margin-right: 8px;
+            font-size: 12px;
+        }
+
+        /* 右侧内容区域 */
+        .main-content {
+            width: var(--main-width);
+            padding: 20px;
+            background: var(--background-color);
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 身份切换区域 */
+        .role-switch {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .role-switch-container {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: var(--box-shadow);
+            overflow: visible;
+        }
+
+        /* 悬浮态光晕效果 */
+        .role-switch-container::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+
+        .role-switch-container:hover::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* 添加悬停文字提示 */
+        .role-switch-container::before {
+            content: attr(data-title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        .role-switch-container:hover::before {
+            opacity: 1;
+            visibility: visible;
+            bottom: 120%;
+        }
+
+        .role-switch-container i {
+            font-size: 20px;
+            transition: opacity 0.3s ease;
+            position: absolute;
+        }
+
+        .role-switch-container i:first-child {
+            opacity: 1;
+        }
+
+        .role-switch-container i:last-child {
+            opacity: 0;
+        }
+
+        .role-switch.active .role-switch-container i:first-child {
+            opacity: 0;
+        }
+
+        .role-switch.active .role-switch-container i:last-child {
+            opacity: 1;
+        }
+
+        /* 成功解锁特效 */
+        .success-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: particleFly 0.6s ease-out forwards;
+        }
+
+        @keyframes particleFly {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 轨道光效 */
+        .track-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(74,144,226,0.2), transparent);
+            transform: translateX(-100%);
+            animation: trackGlow 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes trackGlow {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(200%);
+            }
+        }
+
+        /* 声波扩散效果 */
+        .sound-wave {
+            position: absolute;
+            border: 2px solid rgba(74,144,226,0.2);
+            border-radius: 50%;
+            animation: soundWave 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes soundWave {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        /* 取消操作效果 */
+        .cancel-pulse {
+            position: absolute;
+            border: 2px solid rgba(255,71,87,0.2);
+            border-radius: 50%;
+            animation: cancelPulse 1.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes cancelPulse {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        /* 课程管理内容区域 */
+        .course-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .course-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .step.active {
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: #3498DB;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .step.active::after {
+            width: 80%;
+        }
+
+        /* 步骤切换效果 */
+        .step-content {
+            display: none;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .step-content h2 {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        /* 上传区域样式 */
+        .upload-area {
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            border: 2px dashed var(--primary-gradient);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0.1;
+            animation: wave 2s linear infinite;
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-gradient);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(108, 217, 232, 0.2);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            background: var(--primary-gradient);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border: none;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: none;
+            border-right: 1px solid #eee;
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        th {
+            background: radial-gradient(circle at center, #3498DB 0%, #FFFFFF 100%);
+            color: var(--text-primary);
+            font-weight: bold;
+            border-radius: 0;
+        }
+
+        th:first-child {
+            border-top-left-radius: var(--border-radius);
+        }
+
+        th:last-child {
+            border-top-right-radius: var(--border-radius);
+        }
+
+        tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1440px) {
+            body {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-text">SmartOffice</div>
+            <div class="logo-line"></div>
+        </div>
+        <div class="menu">
+            <div class="menu-item" data-menu="smart">
+                <i class="fas fa-robot"></i>
+                <span>智能驻场</span>
+            </div>
+            <div class="submenu" id="smart-submenu">
+                <div class="submenu-item">
+                    <i class="fas fa-comments"></i>
+                    客户成功
+                </div>
+                <div class="submenu-item">
+                    <i class="fas fa-headset"></i>
+                    在线客服
+                </div>
+                <div class="submenu-item">
+                    <i class="fas fa-tools"></i>
+                    运维工程师
+                </div>
+            </div>
+            <div class="menu-item" data-menu="workspace">
+                <i class="fas fa-desktop"></i>
+                <span>我的工作台</span>
+            </div>
+            <div class="submenu" id="workspace-submenu">
+                <!-- 培训经理菜单 -->
+                <div class="submenu-item manager-menu">
+                    <i class="fas fa-users"></i>
+                    用户管理
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-user-plus"></i>
+                            添加用户
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-user-edit"></i>
+                            修改用户
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-user-minus"></i>
+                            删除用户
+                        </div>
+                    </div>
+                </div>
+                <div class="submenu-item manager-menu">
+                    <i class="fas fa-book"></i>
+                    课程管理
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-upload"></i>
+                            上传课程
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-edit"></i>
+                            编辑课程
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-trash"></i>
+                            删除课程
+                        </div>
+                    </div>
+                </div>
+                <div class="submenu-item manager-menu">
+                    <i class="fas fa-history"></i>
+                    学习记录
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-search"></i>
+                            查询记录
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-download"></i>
+                            导出记录
+                        </div>
+                    </div>
+                </div>
+                <div class="submenu-item manager-menu">
+                    <i class="fas fa-chart-bar"></i>
+                    数据统计
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-file-alt"></i>
+                            生成报表
+                        </div>
+                    </div>
+                </div>
+                <div class="submenu-item manager-menu">
+                    <i class="fas fa-cog"></i>
+                    系统维护
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-clipboard-list"></i>
+                            系统日志
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-database"></i>
+                            数据备份
+                        </div>
+                    </div>
+                </div>
+                <!-- 培训总监菜单 -->
+                <div class="submenu-item director-menu" style="display: none;">
+                    <i class="fas fa-calendar-alt"></i>
+                    培训计划
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-plus-circle"></i>
+                            制定计划
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-paper-plane"></i>
+                            发布计划
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-chart-line"></i>
+                            跟踪计划
+                        </div>
+                    </div>
+                </div>
+                <div class="submenu-item director-menu" style="display: none;">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    讲师管理
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-user-tie"></i>
+                            内训师信息
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-calendar-check"></i>
+                            课程安排
+                        </div>
+                    </div>
+                </div>
+                <div class="submenu-item director-menu" style="display: none;">
+                    <i class="fas fa-chart-line"></i>
+                    数据分析
+                    <div class="sub-submenu">
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-chart-bar"></i>
+                            培训效果
+                        </div>
+                        <div class="sub-submenu-item">
+                            <i class="fas fa-user-graduate"></i>
+                            学习行为分析
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="course-content">
+            <div class="course-steps">
+                <div class="step active" data-step="upload">
+                    <i class="fas fa-upload"></i>
+                    <div>上传课程</div>
+                </div>
+                <div class="step" data-step="edit">
+                    <i class="fas fa-edit"></i>
+                    <div>编辑课程</div>
+                </div>
+                <div class="step" data-step="publish">
+                    <i class="fas fa-paper-plane"></i>
+                    <div>发布课程</div>
+                </div>
+                <div class="step" data-step="list">
+                    <i class="fas fa-list"></i>
+                    <div>课程列表</div>
+                </div>
+            </div>
+            <div class="step-content active" id="upload-content">
+                <div class="form-group">
+                    <label>课程名称</label>
+                    <input type="text" class="form-control" placeholder="请输入课程名称">
+                </div>
+                <div class="form-group">
+                    <label>课程描述</label>
+                    <textarea class="form-control" rows="4" placeholder="请输入课程描述"></textarea>
+                </div>
+                <div class="upload-area">
+                    <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                    <span>拖放文件到此处或点击上传</span>
+                </div>
+                <button type="submit" class="btn pulse">上传</button>
+            </div>
+            <div class="step-content" id="edit-content">
+                <div class="form-group">
+                    <label>课程名称</label>
+                    <input type="text" class="form-control" value="示例课程">
+                </div>
+                <div class="form-group">
+                    <label>课程描述</label>
+                    <textarea class="form-control" rows="4">这是一个示例课程描述</textarea>
+                </div>
+                <button type="submit" class="btn">保存修改</button>
+            </div>
+            <div class="step-content" id="publish-content">
+                <div class="form-group">
+                    <label>发布范围</label>
+                    <select class="form-control">
+                        <option>全部用户</option>
+                        <option>指定部门</option>
+                        <option>指定用户</option>
+                    </select>
+                </div>
+                <button class="btn pulse">发布课程</button>
+            </div>
+            <div class="step-content" id="list-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>课程名称</th>
+                            <th>上传时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>示例课程</td>
+                            <td>2024-03-20</td>
+                            <td>已发布</td>
+                            <td>
+                                <button class="btn">编辑</button>
+                                <button class="btn">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="role-switch">
+        <div class="role-switch-container" data-title="培训经理">
+            <i class="fas fa-user-tie"></i>
+            <i class="fas fa-user-shield"></i>
+        </div>
+    </div>
+
+    <script>
+        // 菜单切换效果
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const submenuId = item.getAttribute('data-menu') + '-submenu';
+                const submenu = document.getElementById(submenuId);
+                
+                // 如果点击的是当前激活的菜单项，则收起菜单
+                if (item.classList.contains('active')) {
+                    item.classList.remove('active');
+                    submenu.classList.remove('show');
+                    return;
+                }
+                
+                // 否则，收起其他菜单，展开当前菜单
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                document.querySelectorAll('.submenu').forEach(s => {
+                    s.classList.remove('show');
+                });
+                submenu.classList.add('show');
+            });
+        });
+
+        // 修改身份切换效果
+        const roleSwitch = document.querySelector('.role-switch');
+        const roleSwitchContainer = roleSwitch.querySelector('.role-switch-container');
+        
+        roleSwitchContainer.addEventListener('click', () => {
+            roleSwitch.classList.toggle('active');
+            const isManager = !roleSwitch.classList.contains('active');
+            
+            // 更新提示文字
+            roleSwitchContainer.setAttribute('data-title', isManager ? '培训经理' : '培训总监');
+            
+            // 切换菜单
+            document.querySelectorAll('.manager-menu').forEach(item => {
+                item.style.display = isManager ? 'block' : 'none';
+            });
+            document.querySelectorAll('.director-menu').forEach(item => {
+                item.style.display = isManager ? 'none' : 'block';
+            });
+
+            // 自动展开工作台菜单
+            const workspaceMenuItem = document.querySelector('[data-menu="workspace"]');
+            const workspaceSubmenu = document.getElementById('workspace-submenu');
+            
+            // 收起其他菜单
+            document.querySelectorAll('.menu-item').forEach(item => {
+                if (item !== workspaceMenuItem) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // 展开工作台菜单
+            workspaceMenuItem.classList.add('active');
+            workspaceSubmenu.classList.add('show');
+        });
+
+        // 步骤切换效果
+        document.querySelectorAll('.step').forEach(step => {
+            step.addEventListener('click', () => {
+                document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+                step.classList.add('active');
+                
+                const stepId = step.getAttribute('data-step') + '-content';
+                document.querySelectorAll('.step-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(stepId).classList.add('active');
+            });
+        });
+
+        // 文件拖放效果
+        const uploadArea = document.querySelector('.upload-area');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--accent-color)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'var(--primary-gradient)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--primary-gradient)';
+            // 处理文件上传逻辑
+        });
+    </script>
+</body>
+</html>
